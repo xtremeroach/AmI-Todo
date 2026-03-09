@@ -1,0 +1,39 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Python Virtual Environment
+venv/
+env/
+.venv/
+
+# Environment Variables / Secrets
+.env
+secrets.json
+
+# IDEs
+.idea/
+.vscode/
+
+# Ignore this specific downloaded doc if you want
+# OWASP_Application_Security_Verification_Standard_5.0.0_en.csv
+
+# Ignore lib
+xmlsec1/
+
+# Ignore sensitive data / artifacts
+identity_dump.json
+xmlsec1.zip
+
+# Ignore internal dev/test scripts
+tasks/
+
+# Browser subagent testing images
+*.png
+*.webp
+

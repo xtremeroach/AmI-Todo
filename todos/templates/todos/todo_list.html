@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>Your Tasks</h2>
+    {% if can_edit %}
+    <a href="{% url 'todo_create' %}" class="btn">+ New Task</a>
+    {% endif %}
+</div>
+
+<div class="todo-grid" style="display: grid; gap: 1rem;">
+    {% for todo in todos %}
+    <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <span style="color: var(--text-secondary); font-size: 0.8rem; margin-right: 1rem;">#{{ todo.id }}</span>
+            <span style="font-size: 1.1rem;">{{ todo.text }}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <span style="padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.8rem; font-weight: 500; 
+                    {% if todo.status == 'OPEN' %}background: rgba(59, 130, 246, 0.2); color: var(--accent-color);
+                    {% elif todo.status == 'ONGOING' %}background: rgba(245, 158, 11, 0.2); color: var(--warning);
+                    {% else %}background: rgba(16, 185, 129, 0.2); color: var(--success);{% endif %}">
+                {{ todo.get_status_display }}
+            </span>
+            {% if can_edit %}
+            <a href="{% url 'todo_update_status' todo.id %}" class="btn btn-outline"
+                style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Change Status</a>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="card" style="text-align: center; color: var(--text-secondary); padding: 3rem;">
+        <p>No tasks found.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

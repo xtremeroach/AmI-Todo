@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <h2 style="margin-bottom: 1.5rem;">Create New Task</h2>
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+            <div style="margin-bottom: 1rem;">
+                <label for="text" style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Task
+                    Description</label>
+                <input type="text" id="text" name="text" required placeholder="What needs to be done?">
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <a href="{% url 'todo_list' %}" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn">Create Task</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

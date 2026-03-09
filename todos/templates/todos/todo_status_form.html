@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <h2 style="margin-bottom: 1.5rem;">Update Task Status</h2>
+    <div class="card">
+        <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">Task: <strong
+                style="color: var(--text-primary);">{{ todo.text }}</strong></p>
+        <form method="post">
+            {% csrf_token %}
+            <div style="margin-bottom: 1rem;">
+                <label for="status"
+                    style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Status</label>
+                <select id="status" name="status">
+                    <option value="OPEN" {% if todo.status=='OPEN' %}selected{% endif %}>Open</option>
+                    <option value="ONGOING" {% if todo.status=='ONGOING' %}selected{% endif %}>Ongoing</option>
+                    <option value="CLOSED" {% if todo.status=='CLOSED' %}selected{% endif %}>Closed</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <a href="{% url 'todo_list' %}" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn">Update Status</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
