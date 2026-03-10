@@ -25,11 +25,23 @@ django.conf.urls.url = re_path
 django.utils.http.is_safe_url = url_has_allowed_host_and_scheme
 
 import django_saml2_auth.views
+from todos.views import local_login
+
+# Restrict generic admin access to 'admin' group or superusers
+original_has_permission = admin.site.has_permission
+
+def custom_admin_has_permission(request):
+    is_active = request.user.is_active
+    is_admin_role = request.user.is_superuser or request.user.groups.filter(name='admin').exists()
+    return is_active and is_admin_role
+
+admin.site.has_permission = custom_admin_has_permission
 
 urlpatterns = [
     path('admin/login/', django_saml2_auth.views.signin),  # Force SSO Login
     path('admin/logout/', django_saml2_auth.views.signout), # Force SSO Logout
     path('admin/', admin.site.urls),
+    path('login/', local_login, name='login'),
     path('saml2_auth/signin/', django_saml2_auth.views.signin),
     path('saml2_auth/signout/', django_saml2_auth.views.signout),
     path('saml2_auth/', include('django_saml2_auth.urls')),

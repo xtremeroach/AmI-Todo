@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import JsonResponse
+from django.contrib import messages
 from .models import Todo
 
 
@@ -102,3 +104,30 @@ def user_search(request):
         for u in users
     ]
     return JsonResponse(results, safe=False)
+
+
+def local_login(request):
+    """
+    Local login view for non-SAML users.
+    Only users who have a usable password can log in.
+    """
+    if request.user.is_authenticated:
+        return redirect('todo_list')
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            # Check if user has a usable password (SAML users generally don't)
+            if user.has_usable_password():
+                auth_login(request, user)
+                return redirect('todo_list')
+            else:
+                messages.error(request, "Access denied. Only local users can use this login page.")
+        else:
+            messages.error(request, "Invalid username or password.")
+
+    return render(request, 'todos/login.html')
+

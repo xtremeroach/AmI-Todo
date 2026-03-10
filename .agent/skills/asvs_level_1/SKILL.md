@@ -14,6 +14,14 @@ When asked to implement ASVS Level 1 or review an application against it, follow
 2. **Review:** Check the codebase against the Level 1 checklist below.
 3. **Implement:** Write or modify code to implement missing security controls required by Level 1.
 4. **Document:** Ensure all necessary documentation is created or updated as mandated by the standard.
+5. **Report Status:** Update the `ASVS_STATUS.md` file in the project root to reflect the current compliance state. Use `[PASS]`, `[FAIL]`, or `[PENDING]` for each requirement.
+
+## Reporting Compliance
+To provide a clear overview, maintain a file named `ASVS_STATUS.md` in the project root. This file should:
+- List requirements grouped by ASVS chapters.
+- Indicate the current status of each requirement.
+- Provide a brief justification or link to the implementation for `[PASS]` items.
+- Briefly describe the gap for `[FAIL]` items.
 
 ## Level 1 Requirements Checklist
 Below is the list of Level 1 requirements extracted from the ASVS 5.0.0 standard:
