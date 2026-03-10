@@ -398,6 +398,73 @@
             padding-bottom: 0.5rem;
             border-bottom: 1px solid var(--border-color);
         }
+
+        /* User Dropdown Menu */
+        .user-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            border: none;
+        }
+
+        .dropdown-toggle:hover {
+            background: var(--accent-color);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: var(--surface-color);
+            min-width: 180px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 0;
+            z-index: 1000;
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        .user-menu:hover .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-item {
+            color: var(--text-primary);
+            padding: 0.6rem 1.2rem;
+            text-decoration: none;
+            display: block;
+            font-size: 0.85rem;
+            transition: background 0.15s;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--border-color);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 0.4rem 0;
+        }
+
+        .dropdown-item.logout {
+            color: var(--danger);
+        }
     </style>
 </head>
 <body>
@@ -405,10 +472,24 @@
         <h1>SAML Tasks</h1>
         <div class="user-info">
             {% if user.is_authenticated %}
-                <span>{{ user.username }} ({{ user.groups.all|join:", " }})</span>
-                {% if user.is_staff %}
-                    <a href="/admin/">Admin Panel</a>
-                {% endif %}
+                <div class="user-menu">
+                    <button class="dropdown-toggle">
+                        <span>{{ user.username }}</span>
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <div class="dropdown-menu">
+                        <div style="padding: 0.4rem 1.2rem; font-size: 0.75rem; color: var(--text-secondary);">
+                            {{ user.groups.all|join:", " }}
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        {% if user.is_staff %}
+                            <a href="/admin/" class="dropdown-item">Admin Panel</a>
+                        {% endif %}
+                        <a href="/saml2_auth/signout/" class="dropdown-item logout">Sign-off</a>
+                    </div>
+                </div>
             {% else %}
                 <span>Not logged in</span>
             {% endif %}
