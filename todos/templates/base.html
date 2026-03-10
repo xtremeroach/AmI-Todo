@@ -399,7 +399,6 @@
             border-bottom: 1px solid var(--border-color);
         }
 
-        /* User Dropdown Menu */
         .user-menu {
             position: relative;
             display: inline-block;
@@ -428,19 +427,40 @@
             position: absolute;
             top: 100%;
             right: 0;
-            background-color: var(--surface-color);
             min-width: 180px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.5rem 0;
             z-index: 1000;
-            display: none;
-            margin-top: 0.5rem;
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            padding-top: 10px; /* Small gap distance */
+        }
+
+        /* The Bridge: Ensures hover stays active while moving from button to menu */
+        .dropdown-menu::before {
+            content: '';
+            position: absolute;
+            top: -20px; /* Overlaps button */
+            left: 0;
+            right: 0;
+            height: 30px; /* Covers gap and button bottom */
+            background: transparent;
         }
 
         .user-menu:hover .dropdown-menu {
-            display: block;
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .dropdown-content {
+            background-color: var(--surface-color);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 0;
+            overflow: hidden;
+            position: relative; /* Ensure it stays above bridge if needed, but not necessary */
         }
 
         .dropdown-item {
@@ -480,14 +500,16 @@
                         </svg>
                     </button>
                     <div class="dropdown-menu">
-                        <div style="padding: 0.4rem 1.2rem; font-size: 0.75rem; color: var(--text-secondary);">
-                            {{ user.groups.all|join:", " }}
+                        <div class="dropdown-content">
+                            <div style="padding: 0.4rem 1.2rem; font-size: 0.75rem; color: var(--text-secondary);">
+                                {{ user.groups.all|join:", " }}
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            {% if user.is_staff %}
+                                <a href="/admin/" class="dropdown-item">Admin Panel</a>
+                            {% endif %}
+                            <a href="/saml2_auth/signout/" class="dropdown-item logout">Sign-off</a>
                         </div>
-                        <div class="dropdown-divider"></div>
-                        {% if user.is_staff %}
-                            <a href="/admin/" class="dropdown-item">Admin Panel</a>
-                        {% endif %}
-                        <a href="/saml2_auth/signout/" class="dropdown-item logout">Sign-off</a>
                     </div>
                 </div>
             {% else %}
