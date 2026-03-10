@@ -30,8 +30,8 @@ Before you begin, ensure you have the following installed:
 
 1. **Clone the repository:**
    ```bash
-   git clone <repository_url>
-   cd Django-TestSite
+   git clone https://github.com/xtremeroach/AmI-Todo.git
+   cd AmI-Todo
    ```
 
 2. **Set up the virtual environment:**
@@ -50,8 +50,8 @@ Before you begin, ensure you have the following installed:
 
 1. **Clone the repository:**
    ```powershell
-   git clone <repository_url>
-   cd Django-TestSite
+   git clone https://github.com/xtremeroach/AmI-Todo.git
+   cd AmI-Todo
    ```
 
 2. **Set up the virtual environment:**

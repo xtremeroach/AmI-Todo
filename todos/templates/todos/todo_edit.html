@@ -2,39 +2,67 @@
 
 {% block content %}
 <div style="max-width: 600px; margin: 0 auto;">
-    <h2 style="margin-bottom: 1.5rem;">Create New Task</h2>
+    <h2 style="margin-bottom: 1.5rem;">{% if status_only %}Update Task Status{% else %}Edit Task{% endif %}</h2>
     <div class="card">
-        <form method="post" id="create-form">
+        <form method="post" id="edit-form">
             {% csrf_token %}
+
+            {% if not status_only %}
             <div style="margin-bottom: 1rem;">
                 <label for="text" style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Task Description</label>
-                <input type="text" id="text" name="text" required placeholder="What needs to be done?">
+                <textarea id="text" name="text" required>{{ todo.text }}</textarea>
             </div>
+            {% endif %}
 
             <div style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Assign Users</label>
+                <label for="status" style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Status</label>
+                <select id="status" name="status">
+                    <option value="OPEN" {% if todo.status == 'OPEN' %}selected{% endif %}>Open</option>
+                    <option value="PLANNING" {% if todo.status == 'PLANNING' %}selected{% endif %}>Planning</option>
+                    <option value="ONGOING" {% if todo.status == 'ONGOING' %}selected{% endif %}>Ongoing</option>
+                    <option value="CLOSED" {% if todo.status == 'CLOSED' %}selected{% endif %}>Closed</option>
+                </select>
+            </div>
+
+            {% if not status_only %}
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Assigned Users</label>
                 <div class="search-select" id="user-search-widget">
                     <input type="text" id="user-search-input" placeholder="Search by name or username..." autocomplete="off">
                     <div class="search-dropdown" id="user-search-dropdown"></div>
-                    <div class="selected-users" id="selected-users"></div>
+                    <div class="selected-users" id="selected-users">
+                        {% for u in todo.assigned_users.all %}
+                        <span class="selected-tag">
+                            {{ u.first_name }} {{ u.last_name }} ({{ u.username }})
+                            <input type="hidden" name="assigned_users" value="{{ u.pk }}">
+                            <span class="remove-tag" data-id="{{ u.pk }}">&times;</span>
+                        </span>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
+            {% endif %}
 
             <div style="display: flex; gap: 1rem; justify-content: flex-end;">
                 <a href="{% url 'todo_list' %}" class="btn btn-outline">Cancel</a>
-                <button type="submit" class="btn">Create Task</button>
+                <button type="submit" class="btn">{% if status_only %}Update Status{% else %}Save Changes{% endif %}</button>
             </div>
         </form>
     </div>
 </div>
 
+{% if not status_only %}
 <script>
 (function() {
     const searchInput = document.getElementById('user-search-input');
     const dropdown = document.getElementById('user-search-dropdown');
     const selectedContainer = document.getElementById('selected-users');
-    const form = document.getElementById('create-form');
     const selectedIds = new Set();
+
+    // Pre-populate selected IDs from existing tags
+    document.querySelectorAll('#selected-users input[type="hidden"]').forEach(input => {
+        selectedIds.add(parseInt(input.value));
+    });
 
     const allUsers = [
         {% for u in users %}
@@ -47,14 +75,6 @@
         }{% if not forloop.last %},{% endif %}
         {% endfor %}
     ];
-
-    // Auto-assign current user
-    const currentUserId = {{ request.user.pk }};
-    const currentUser = allUsers.find(u => u.id === currentUserId);
-    if (currentUser) {
-        selectedIds.add(currentUser.id);
-        addTag(currentUser.id, currentUser.display);
-    }
 
     function renderDropdown(query) {
         const q = query.toLowerCase();
@@ -118,4 +138,5 @@
     });
 })();
 </script>
+{% endif %}
 {% endblock %}
