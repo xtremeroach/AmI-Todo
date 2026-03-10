@@ -23,6 +23,11 @@ load_dotenv(BASE_DIR / '.env', override=True)
 # Load environment variables from venv/.env file as well to support single-file configs
 load_dotenv(BASE_DIR / 'venv' / '.env', override=True)
 
+# Add local xmlsec1 to PATH for SAML (Windows)
+XMLSEC_BIN = BASE_DIR / 'xmlsec1' / 'xmlsec' / 'bin'
+if XMLSEC_BIN.exists():
+    os.environ['PATH'] = str(XMLSEC_BIN) + os.pathsep + os.environ.get('PATH', '')
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -184,6 +189,16 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
         },
     },
 }

@@ -1,6 +1,12 @@
 # EntraID (Azure AD) SAML Configuration Guide
 
-This guide explains how to acquire the necessary `SAML2_METADATA_URL` to configure `django-saml2-auth` with Microsoft EntraID.
+This guide explains how to acquire the necessary `SAML2_METADATA_URL` to configure `django-saml2-auth` with Microsoft EntraID and set up the required local security binaries.
+
+## Step 0: Install xmlsec1 (Windows Only)
+SAML 2.0 requires the `xmlsec1` library for signing and verifying assertions.
+1. Download the latest Windows 64-bit zip (e.g., `xmlsec1-1.3.9-win64.zip`) from the [official releases](https://github.com/lsh123/xmlsec/releases).
+2. Extract the archive into a folder named `xmlsec1` in your project root.
+3. The project's `settings.py` is pre-configured to automatically add `xmlsec1/xmlsec/bin/` to your system PATH at runtime.
 
 ## Step 1: Create an Enterprise Application in EntraID
 1. Navigate to the **Microsoft Entra admin center**.

@@ -21,6 +21,7 @@ The application has been hardened to securely enforce **OWASP ASVS Level 1** com
 Before you begin, ensure you have the following installed:
 1. **Python 3.10+**
 2. **Git**
+3. **xmlsec1** (Required for SAML on Windows. See Windows installation below.)
 
 ---
 
@@ -65,6 +66,11 @@ Before you begin, ensure you have the following installed:
    python -m pip install --upgrade pip
    pip install Django django-saml2-auth pysaml2 python-dotenv
    ```
+
+4. **Install xmlsec1 (SAML Security Library):**
+   - Download the latest Windows 64-bit binary from [xmlsec releases](https://github.com/lsh123/xmlsec/releases) (e.g., `xmlsec1-1.3.9-win64.zip`).
+   - Extract the zip file into a folder named `xmlsec1` in the project root.
+   - The application will automatically detect the binaries in `xmlsec1/xmlsec/bin/` via `settings.py`.
 
 
 ---
