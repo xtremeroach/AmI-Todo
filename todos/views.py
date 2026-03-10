@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import JsonResponse
 from django.contrib import messages
+import json
 from .models import Todo
 
 
@@ -15,15 +16,19 @@ def is_writer_or_admin(user):
 @login_required
 def todo_list(request):
     can_edit = is_writer_or_admin(request.user)
+    sort_dir = request.GET.get('sort', 'asc')
+    order_prefix = '-' if sort_dir == 'desc' else ''
+
     columns = [
-        ('OPEN', 'Open', Todo.objects.filter(status='OPEN')),
-        ('PLANNING', 'Planning', Todo.objects.filter(status='PLANNING')),
-        ('ONGOING', 'Ongoing', Todo.objects.filter(status='ONGOING')),
-        ('CLOSED', 'Closed', Todo.objects.filter(status='CLOSED')),
+        ('OPEN', 'Open', Todo.objects.filter(status='OPEN').order_by(f'{order_prefix}priority')),
+        ('PLANNING', 'Planning', Todo.objects.filter(status='PLANNING').order_by(f'{order_prefix}priority')),
+        ('ONGOING', 'Ongoing', Todo.objects.filter(status='ONGOING').order_by(f'{order_prefix}priority')),
+        ('CLOSED', 'Closed', Todo.objects.filter(status='CLOSED').order_by(f'{order_prefix}priority')),
     ]
     return render(request, 'todos/todo_list.html', {
         'columns': columns,
         'can_edit': can_edit,
+        'sort_dir': sort_dir,
     })
 
 
@@ -131,3 +136,62 @@ def local_login(request):
 
     return render(request, 'todos/login.html')
 
+@login_required
+def update_task_priority(request):
+    """
+    API endpoint to update task priorities and optionally status (e.g., from drag/drop).
+    Expects a POST request with JSON body containing a list of {id: int, priority: int, status: string(optional)}.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+
+    user = request.user
+    is_privileged = is_writer_or_admin(user)
+
+    try:
+        data = json.loads(request.body)
+        if not isinstance(data, list):
+            return JsonResponse({'error': 'Expected a JSON array'}, status=400)
+        
+        updated_count = 0
+        for item in data:
+            task_id = item.get('id')
+            priority = item.get('priority')
+            new_status = item.get('status')
+
+            if task_id is None or priority is None:
+                continue
+
+            try:
+                todo = Todo.objects.get(id=task_id)
+            except Todo.DoesNotExist:
+                continue
+
+            is_assigned = todo.assigned_users.filter(id=user.id).exists()
+            is_owner = todo.owner == user
+
+            # Check permissions
+            if not (is_privileged or is_assigned or is_owner):
+                continue
+
+            # Assigned-only users can only change status, not priority/text unless it's just the same list reordered by a privileged user.
+            status_only = is_assigned and not is_privileged and not is_owner
+            
+            # If status_only, they shouldn't be reordering the backlog for everyone, but they can move to a new status.
+            # However, for UX, if they drag-and-drop to change status, order might be sent too.
+            # We will allow order update if they are just moving to a different status column they belong to.
+            
+            # Always update priority if possible
+            if not status_only:
+                todo.priority = priority
+            
+            if new_status and new_status in dict(Todo.STATUS_CHOICES):
+                todo.status = new_status
+
+            todo.save()
+            updated_count += 1
+
+        return JsonResponse({'status': 'success', 'updated': updated_count})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)

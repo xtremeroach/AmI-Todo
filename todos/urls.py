@@ -6,4 +6,5 @@ urlpatterns = [
     path('create/', views.todo_create, name='todo_create'),
     path('<int:pk>/edit/', views.todo_edit, name='todo_edit'),
     path('api/users/search/', views.user_search, name='user_search'),
+    path('api/update_priority/', views.update_task_priority, name='update_priority'),
 ]

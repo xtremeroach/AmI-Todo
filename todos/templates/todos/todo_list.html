@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+{% endblock %}
+
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
     <h2 style="font-size: 1.5rem; font-weight: 700;">Task Board</h2>
@@ -12,6 +16,17 @@
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="16" height="4" rx="1" fill="currentColor"/><rect x="1" y="7" width="16" height="4" rx="1" fill="currentColor"/><rect x="1" y="13" width="16" height="4" rx="1" fill="currentColor"/></svg>
             </button>
         </div>
+        <div style="border-left: 1px solid rgba(255,255,255,0.1); height: 24px; margin: 0 0.25rem;"></div>
+        <a href="?sort={% if sort_dir == 'asc' %}desc{% else %}asc{% endif %}" class="btn btn-outline" title="Toggle Priority Sort" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                {% if sort_dir == 'asc' %}
+                <path d="M12 5v14M19 12l-7 7-7-7"/>
+                {% else %}
+                <path d="M12 19V5M5 12l7-7 7 7"/>
+                {% endif %}
+            </svg>
+            Sort
+        </a>
         {% if can_edit %}
         <a href="{% url 'todo_create' %}" class="btn">+ New Task</a>
         {% endif %}
@@ -21,7 +36,7 @@
 <!-- Column (Kanban) View -->
 <div class="kanban-board" id="column-view">
     {% for status_key, status_label, todos in columns %}
-    <div class="kanban-column column-{{ status_key }}">
+    <div class="kanban-column" data-status="{{ status_key }}">
         <div class="kanban-column-header">
             <h3>
                 <span class="status-badge status-{{ status_key }}">{{ status_label }}</span>
@@ -30,7 +45,7 @@
         </div>
 
         {% for todo in todos %}
-        <div class="card">
+        <div class="card sortable-card" data-id="{{ todo.id }}">
             <div class="todo-card-text">{{ todo.text }}</div>
             <div class="todo-card-footer">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -64,13 +79,13 @@
 <div class="stacked-view" id="stacked-view" style="display: none;">
     {% for status_key, status_label, todos in columns %}
     {% if todos %}
-    <div class="stacked-section">
+    <div class="stacked-section" data-status="{{ status_key }}">
         <div class="stacked-header">
             <span class="status-badge status-{{ status_key }}">{{ status_label }}</span>
             <span class="kanban-count">{{ todos|length }}</span>
         </div>
         {% for todo in todos %}
-        <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="card sortable-card" data-id="{{ todo.id }}" style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0;">
                 <span class="todo-card-id">#{{ todo.id }}</span>
                 <span style="font-size: 1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ todo.text }}</span>
@@ -124,6 +139,103 @@
         columnView.style.display = view === 'column' ? 'grid' : 'none';
         stackedView.style.display = view === 'stacked' ? 'block' : 'none';
     }
+
+    // SortableJS Drag and Drop functionality
+    const canEdit = {{ can_edit|yesno:"true,false" }};
+    if (canEdit) {
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const handleSort = function(evt) {
+            const container = evt.to;
+            const status = container.dataset.status;
+            const cards = container.querySelectorAll('.sortable-card');
+            
+            const updates = [];
+            // Assign priorities (0 is highest priority)
+            cards.forEach((card, index) => {
+                updates.push({
+                    id: parseInt(card.dataset.id),
+                    priority: index,
+                    status: status
+                });
+            });
+
+            // Update UI count immediately
+            const countEl = container.querySelector('.kanban-count');
+            if (countEl) countEl.textContent = cards.length;
+            
+            if (evt.from !== evt.to) {
+                const fromCountEl = evt.from.querySelector('.kanban-count');
+                if (fromCountEl) fromCountEl.textContent = evt.from.querySelectorAll('.sortable-card').length;
+            }
+
+            // Sync with backend
+            fetch("{% url 'update_priority' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(updates)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.error('Failed to update priorities');
+                    // In a real app, you might want to revert the DOM change here if it fails
+                }
+            });
+        };
+
+        const sortableOptions = {
+            group: 'todos',
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            dragClass: 'sortable-drag',
+            onEnd: handleSort,
+            filter: '.kanban-column-header, .stacked-header, .empty-column',
+            preventOnFilter: false
+        };
+
+        // Initialize Kanban columns
+        document.querySelectorAll('.kanban-column').forEach(col => {
+            new Sortable(col, sortableOptions);
+        });
+
+        // Initialize Stacked lists
+        document.querySelectorAll('.stacked-section').forEach(sec => {
+            new Sortable(sec, sortableOptions);
+        });
+    }
 })();
 </script>
+
+<style>
+    .sortable-ghost {
+        opacity: 0.4;
+        background-color: rgba(59, 130, 246, 0.2);
+    }
+    .sortable-drag {
+        cursor: grabbing !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .sortable-card {
+        cursor: grab;
+    }
+    .sortable-card:active {
+        cursor: grabbing;
+    }
+</style>
 {% endblock %}

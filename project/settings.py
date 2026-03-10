@@ -160,10 +160,10 @@ SAML2_AUTH = {
     },
 
     'ATTRIBUTES_MAP': {
-        'email': 'name',
+        'email': 'mail',
         'username': 'name',
-        'first_name': 'http://schemas.microsoft.com/identity/claims/displayname',
-        'last_name': 'http://schemas.microsoft.com/identity/claims/displayname',
+        'first_name': 'givenname',
+        'last_name': 'surname',
     }
 }
 

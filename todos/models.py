@@ -12,8 +12,12 @@ class Todo(models.Model):
 
     text = models.TextField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='OPEN')
+    priority = models.IntegerField(default=0, db_index=True)
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='owned_todos')
     assigned_users = models.ManyToManyField(User, blank=True, related_name='assigned_todos')
+
+    class Meta:
+        ordering = ['priority', '-id']
 
     def __str__(self):
         return f"[{self.status}] {self.text[:50]}"
