@@ -12,7 +12,7 @@ SAML 2.0 requires the `xmlsec1` library for signing and verifying assertions.
 1. Navigate to the **Microsoft Entra admin center**.
 2. Go to **Identity** > **Applications** > **Enterprise applications**.
 3. Select **New application** -> **Create your own application**.
-4. Name the application (e.g., `Django Todo App`) and select "Integrate any other application you don't find in the gallery (Non-gallery)".
+4. Name the application (e.g., `ImA TODO`) and select "Integrate any other application you don't find in the gallery (Non-gallery)".
 5. Click **Create**.
 
 ## Step 2: Configure Single Sign-On (SSO)

@@ -1,4 +1,4 @@
-# Django SAML Test Site
+# ImA TODO
 
 This is a secure Django web application integrated with Microsoft Entra ID (formerly Azure AD) for Enterprise Single Sign-On (SSO) via SAML 2.0. Standard user authentication is entirely delegated to Entra ID, routing users dynamically to a protected `/todos/` interface based on Role-Based Access Control (RBAC). 
 
